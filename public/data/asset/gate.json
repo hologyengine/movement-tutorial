@@ -1,0 +1,10 @@
+{
+  "name": "gate",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828e-88d4-4925-9501-62a40b83c5e0",
+  "fileKey": "gate.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\gate.glb"
+}

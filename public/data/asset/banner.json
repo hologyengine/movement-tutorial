@@ -1,0 +1,10 @@
+{
+  "name": "banner",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828c-2bf2-4957-a8d8-daf07b5b28ff",
+  "fileKey": "banner.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\banner.glb"
+}

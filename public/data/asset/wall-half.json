@@ -1,0 +1,10 @@
+{
+  "name": "wall-half",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828f-7c9e-442d-8af7-f441818ab818",
+  "fileKey": "wall-half.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\wall-half.glb"
+}

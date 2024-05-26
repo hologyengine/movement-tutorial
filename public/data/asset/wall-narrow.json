@@ -1,0 +1,10 @@
+{
+  "name": "wall-narrow",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828f-bf92-45f8-a98a-8e612d9ecdb2",
+  "fileKey": "wall-narrow.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\wall-narrow.glb"
+}

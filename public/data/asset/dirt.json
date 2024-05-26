@@ -1,0 +1,10 @@
+{
+  "name": "dirt",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828d-f086-47a8-a52b-f6b55936b30d",
+  "fileKey": "dirt.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\dirt.glb"
+}

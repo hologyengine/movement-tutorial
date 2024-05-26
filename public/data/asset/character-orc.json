@@ -1,0 +1,10 @@
+{
+  "name": "character-orc",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828c-d250-4911-909d-2a8819d3f86a",
+  "fileKey": "character-orc.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\character-orc.glb"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "trap",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828f-5c50-4dd4-95bd-94da13ace698",
+  "fileKey": "trap.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\trap.glb"
+}

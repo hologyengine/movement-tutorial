@@ -1,0 +1,10 @@
+{
+  "name": "chest",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828d-3592-441b-be72-024ad1a100f0",
+  "fileKey": "chest.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\chest.glb"
+}

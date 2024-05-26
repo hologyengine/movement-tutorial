@@ -1,0 +1,10 @@
+{
+  "name": "wall-opening",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c228290-13e8-4003-b287-241e17b37878",
+  "fileKey": "wall-opening.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\wall-opening.glb"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "colormap",
+  "path": "",
+  "type": "texture",
+  "collisionDetection": true,
+  "id": "9c228291-15e0-4878-a314-5d517b2d352f",
+  "fileKey": "colormap.png",
+  "fileFormat": "png",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\Textures\\colormap.png"
+}

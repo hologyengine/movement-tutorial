@@ -1,0 +1,10 @@
+{
+  "name": "wall",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c228290-5a42-4650-8b07-28741f9e2273",
+  "fileKey": "wall.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\wall.glb"
+}

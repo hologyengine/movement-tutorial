@@ -1,0 +1,10 @@
+{
+  "name": "column",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828d-b1ca-49fd-ba95-5024bd68b265",
+  "fileKey": "column.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\column.glb"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "barrel",
+  "path": "",
+  "type": "mesh",
+  "collisionDetection": true,
+  "id": "9c22828c-547e-476f-82b6-265921f19278",
+  "fileKey": "barrel.glb",
+  "fileFormat": "glb",
+  "sourceFile": "C:\\Users\\adamr\\Downloads\\kenney_mini-dungeon\\Models\\GLB format\\barrel.glb"
+}

@@ -36,7 +36,7 @@ class Character extends BaseActor {
     camera.fov = 30
     camera.updateProjectionMatrix()
 
-    const { scene, animations } = await this.assetLoader.geGltfAtPath('dungeon/character-human.glb')
+    const { scene, animations } = await this.assetLoader.getModelByAssetName('character-orc')
 
     this.object.add(scene)
 
