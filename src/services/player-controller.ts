@@ -22,11 +22,10 @@ enum InputAction {
 
 @Service()
 class PlayerController {
-  private inputService = inject(InputService) // maybe support multple input services
+  private inputService = inject(InputService)
   private character: Character
 
   constructor() {
-    // TODO Add a mouse click feature
     this.inputService.setKeybind(InputAction.jump, new Keybind(" "))
     this.inputService.setKeybind(InputAction.sprint, new Keybind("Shift"))
     this.inputService.setKeybind(InputAction.moveForward, new Keybind("w"))
@@ -47,10 +46,11 @@ class PlayerController {
     )
   }
 
-  public posess(character: Character) {
+  public setup(character: Character) {
     this.inputService.stop()
     this.character = character
     this.bindCharacterInput()
+    this.inputService.start()
   }
 
   private bindCharacterInput() {

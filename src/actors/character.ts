@@ -4,8 +4,6 @@ import { CharacterAnimationComponent, CharacterMovementComponent, CharacterMovem
 
 @Actor()
 class Character extends BaseActor {
-
-  private viewController = inject(ViewController)
   private animation = attach(CharacterAnimationComponent)
   public readonly movement = attach(CharacterMovementComponent, {
     maxSpeed: 1.5,
@@ -32,10 +30,6 @@ class Character extends BaseActor {
   private assetLoader = inject(AssetLoader)
 
   async onInit(): Promise<void> {
-    const camera = this.thirdPartyCamera.camera.instance
-    camera.fov = 30
-    camera.updateProjectionMatrix()
-
     const { scene, animations } = await this.assetLoader.getModelByAssetName('character-orc')
 
     this.object.add(scene)
@@ -61,8 +55,6 @@ class Character extends BaseActor {
 
     this.animation.setup(scene)
     this.animation.playStateMachine(sm)
-
-
   }
 
 }
