@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hology/core": "^0.0.37",
-    "@hology/react": "^0.0.4",
+    "@hology/core": "^0.0.39",
+    "@hology/react": "^0.0.5",
     "@preact/signals-react-transform": "^0.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
