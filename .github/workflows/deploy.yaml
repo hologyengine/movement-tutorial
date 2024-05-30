@@ -19,7 +19,7 @@ jobs:
       - name: Compile
         working-directory: ./
         run: |
-          npm run build
+          npx tsc && npx vite build --base=./
       - uses: actions/upload-artifact@main
         with:
           name: page
