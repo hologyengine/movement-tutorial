@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hology/core": "^0.0.39",
-    "@hology/react": "^0.0.5",
+    "@dimforge/rapier3d": "^0.13.1",
+    "@hology/core": "^0.0.42",
+    "@hology/react": "^0.0.8",
     "@preact/signals-react-transform": "^0.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "recast-navigation": "^0.30.0",
     "three": "^0.139.2"
   },
   "devDependencies": {

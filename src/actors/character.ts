@@ -1,12 +1,12 @@
 
-import { Actor, AnimationState, AnimationStateMachine, AssetLoader, BaseActor, ViewController, attach, inject } from "@hology/core/gameplay";
+import { Actor, AnimationState, AnimationStateMachine, AssetLoader, BaseActor, attach, inject } from "@hology/core/gameplay";
 import { CharacterAnimationComponent, CharacterMovementComponent, CharacterMovementMode, ThirdPartyCameraComponent } from "@hology/core/gameplay/actors";
 
 @Actor()
 class Character extends BaseActor {
   private animation = attach(CharacterAnimationComponent)
   public readonly movement = attach(CharacterMovementComponent, {
-    maxSpeed: 1.5,
+    maxSpeed: 1.5 * 50,
     maxSpeedSprint: 4,
     maxSpeedBackwards: 1,
     snapToGround: 0.1,
