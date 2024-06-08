@@ -6113,18 +6113,18 @@
       "id": "fd09dbf6-cde0-4953-99bf-f5186ed69fbe",
       "name": "SpawnPoint",
       "position": [
-        -195.26019015172233,
-        -1.7763568394002505e-15,
-        137.34141960071278
+        -162.05590915822023,
+        -1.7763568394002568e-15,
+        139.13610446041403
       ],
       "scale": [
-        0.9999999999999999,
         1,
-        0.9999999999999999
+        1,
+        1
       ],
       "rotation": [
         -3.141592653589793,
-        1.4774359998535813,
+        1.4774359998535824,
         -3.141592653589793,
         "XYZ"
       ],
@@ -6705,9 +6705,9 @@
         140.0826499050515
       ],
       "scale": [
-        2.2437347559602547,
-        2.2437347559602547,
-        2.2437347559602547
+        1,
+        1,
+        1
       ],
       "rotation": [
         0,
@@ -6723,7 +6723,7 @@
       "shape": "stairsSpiral",
       "shapeParams": {
         "floating": {
-          "value": false,
+          "value": true,
           "type": 4
         },
         "width": {
@@ -6731,15 +6731,15 @@
           "type": 1
         },
         "height": {
-          "value": 0.05,
+          "value": 0.1,
           "type": 1
         },
         "steps": {
-          "value": 33,
+          "value": 117,
           "type": 1
         },
         "degrees": {
-          "value": 90,
+          "value": 840,
           "type": 1
         },
         "radius": {
@@ -6751,6 +6751,99 @@
           "type": 4
         }
       },
+      "physics": {
+        "type": 2,
+        "friction": 0.5,
+        "density": 1,
+        "restitution": 0.5,
+        "mass": 1
+      }
+    },
+    {
+      "id": "89ac4ac0-5ede-4e97-abc3-4af0fe486078",
+      "name": "stairs",
+      "assetId": "9c22828e-df6e-4649-a712-a219db50173e",
+      "position": [
+        -156.02915037695158,
+        0.9181506672774127,
+        122.99518772395894
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "type": "asset_mesh",
+      "materialAssignments": [],
+      "collisionDetection": true,
+      "physics": {
+        "type": 2,
+        "friction": 0.5,
+        "density": 1,
+        "restitution": 0.5,
+        "mass": 1
+      }
+    },
+    {
+      "id": "a1238fcb-a02f-456e-b446-e544f4ca8a9f",
+      "name": "stairs",
+      "assetId": "9c22828e-df6e-4649-a712-a219db50173e",
+      "position": [
+        -156.02915037695158,
+        1.8337896801196658,
+        122.14064300634168
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "type": "asset_mesh",
+      "materialAssignments": [],
+      "collisionDetection": true,
+      "physics": {
+        "type": 2,
+        "friction": 0.5,
+        "density": 1,
+        "restitution": 0.5,
+        "mass": 1
+      }
+    },
+    {
+      "id": "314f0ea5-f4de-462d-be2b-474f86739910",
+      "name": "stairs",
+      "assetId": "9c22828e-df6e-4649-a712-a219db50173e",
+      "position": [
+        -156.02915037695158,
+        2.7651381316409545,
+        121.28584262452162
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "type": "asset_mesh",
+      "materialAssignments": [],
+      "collisionDetection": true,
       "physics": {
         "type": 2,
         "friction": 0.5,

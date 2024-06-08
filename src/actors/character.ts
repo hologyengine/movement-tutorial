@@ -6,7 +6,7 @@ import { CharacterAnimationComponent, CharacterMovementComponent, CharacterMovem
 class Character extends BaseActor {
   private animation = attach(CharacterAnimationComponent)
   public readonly movement = attach(CharacterMovementComponent, {
-    maxSpeed: 1.5 * 50,
+    maxSpeed: 1.5 * 5,
     maxSpeedSprint: 4,
     maxSpeedBackwards: 1,
     snapToGround: 0.1,
