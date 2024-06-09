@@ -1,17 +1,20 @@
 
-import { RigidBody } from '@dimforge/rapier3d-compat';
-import { RigidBodySet } from '@dimforge/rapier3d-compat';
-import { Collider, Heightfield, Shape, ShapeType, Ball, Cuboid, Capsule, ConvexPolyhedron, TriMesh, Cone, Cylinder } from '@dimforge/rapier3d-compat';
+import { Ball, Collider, ConvexPolyhedron, Cuboid, Cylinder, Heightfield, RigidBody, RigidBodySet, ShapeType, TriMesh } from '@dimforge/rapier3d-compat';
 import { Actor, BaseActor, Parameter, PhysicsSystem, PointerEvents, ViewController, World, inject } from "@hology/core/gameplay";
 import { RecastConfig, init } from '@recast-navigation/core';
+import { NavMeshQuery } from 'recast-navigation';
 import { generateTiledNavMesh } from 'recast-navigation/generators';
 import { DebugDrawer, getPositionsAndIndices } from 'recast-navigation/three';
-import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import * as THREE from 'three';
-import {  Mesh, } from "three";
-import { NavMeshQuery } from 'recast-navigation';
+import { Mesh, } from "three";
 import Character from './character';
+import { DynamicTiledNavMesh } from './dynamic-tiled-navmesh';
 
+
+const navMeshBounds = new THREE.Box3(new THREE.Vector3(-5000, -1000, -50000), new THREE.Vector3(70000, 30000, 40000))
+const navMeshWorkers = navigator.hardwareConcurrency ?? 3
+
+type VecLike = {x:number, y: number, z: number}
 @Actor()
 class Navmesh extends BaseActor {
 
@@ -32,10 +35,11 @@ class Navmesh extends BaseActor {
     
     // Using a box like this does help a lot in reducing computation
     // However, 
-    const boxRadius = 800
-    const playerPos = this.view.getCamera().getWorldPosition(new THREE.Vector3())
-    const playerBox = new THREE.Box3(new THREE.Vector3().copy(playerPos).subScalar(boxRadius), new THREE.Vector3().copy(playerPos).addScalar(boxRadius))
-    /**
+    // A small box like 50 that is smaller than the tile size, means that it likely
+    // will have to recalculate a lot of tiles
+    // However, it reduces the amount of meshes that has to be taken into account. 
+    const boxRadius = 100
+      /**
      * 
      * It takes about 1 second right now to refresh the nav mesh.
      * This is not acceptable for continuous updates. It is also not promising for lower end devices.
@@ -52,45 +56,134 @@ class Navmesh extends BaseActor {
      * Also try to minimize the meshes to include only those that intersect with the tiles. 
      * https://github.com/isaac-mason/sketches/blob/main/src/sketches/recast-navigation/dynamic-tiled-navmesh/navigation/navigation.tsx
      * 
+     * on each iteration
+     * find objects that don't previously have been considered or have moved. 
+     * only consider them if they are within the player's box (ideally none should be found here and this check should be fast)
+     * generate meshes for these if that doesn't exist or looks different
+     * store data about the body such as position and rotation to be able to know if they require updates or not
+     * figure out what tiles need to be updated if they intersect with these
+     * find all meshes that intersect with each tiles
+     * generate the positions and indices for meshes relevant for each tile
+     * call build tile for each
+     * 
+     * 
      * 
      */
     const start = performance.now()
+
+    const meshCache = new Map<Collider, {pos: VecLike, mesh: Mesh}>()
+
     
     const debugDrawer = new DebugDrawer()
-    const meshes: Mesh[] = [];
+    const getTraversableMeshes = () => {
+      const playerPos = this.view.getCamera().getWorldPosition(new THREE.Vector3())
+      const playerBox = new THREE.Box3(new THREE.Vector3().copy(playerPos).subScalar(boxRadius), new THREE.Vector3().copy(playerPos).addScalar(boxRadius))
+ 
+      
+      const meshes: Mesh[] = [];
 
-    const bodies = this.physics['world'].bodies as RigidBodySet
-    let ignoredMeshes = 0
-    const meshBox = new THREE.Box3()
-    for (const body of bodies.getAll()) {
-      for (let i = 0, l = body.numColliders(); i < l; i++) {
-        const collider = body.collider(i)
-        const mesh = convertColliderToMesh(collider)
-        
-        // TODO Consider using spheres instead
-        if (mesh != null) {
-          meshBox.copy(mesh.geometry.boundingBox)
-          meshBox.min.add(mesh.position)
-          meshBox.max.add(mesh.position)
-          const closeEnough = meshBox.intersectsBox(playerBox)
+      const bodies = this.physics['world'].bodies as RigidBodySet
+      let ignoredMeshes = 0
+      const meshBox = new THREE.Box3()
+      for (const body of bodies.getAll()) {
+        for (let i = 0, l = body.numColliders(); i < l; i++) {
+          const collider = body.collider(i)
+          if (collider.isSensor()) {
+            continue
+          } 
+          const cached = meshCache.get(collider)?.mesh
+          const mesh = cached ?? convertColliderToMesh(collider)
+          
+          // TODO Consider using spheres instead
+          if (mesh != null) {
+            meshBox.copy(mesh.geometry.boundingBox)
+            meshBox.min.add(mesh.position)
+            meshBox.max.add(mesh.position)
+            const closeEnough = meshBox.intersectsBox(playerBox)
 
-          if(closeEnough) meshes.push(mesh)
-          //this.object.add(mesh)
-          if (!closeEnough) {
-            ignoredMeshes++
+            meshCache.set(collider, {pos: collider.translation(), mesh})
+            if(closeEnough) {
+              meshes.push(mesh)
+            }
+            //this.object.add(mesh)
+            if (!closeEnough) {
+              ignoredMeshes++
+            }
+          }
+          
+        }
+      }
+      console.log(meshes)
+      console.log({ignoredMeshes, playerBox})
+      return meshes
+    }
+
+    const getTraversablePositionsAndIndices = (): [positions: Float32Array, indices: Uint32Array] => {
+      const traversableMeshes = getTraversableMeshes()
+      const [positions, indices] = getPositionsAndIndices(traversableMeshes)
+
+      return [positions, indices]
+    }
+
+    const tmpBox = new THREE.Box3()
+
+    const lastPos = new WeakMap<Mesh, THREE.Vector3>()
+
+    setInterval(() => {
+      console.time('collect meshes')
+      const bounds = new THREE.Box3()
+  
+      console.time('meshes')
+      const meshes = getTraversableMeshes()
+      console.timeEnd('meshes')
+      for (const mesh of meshes) {
+        if (lastPos.has(mesh) && lastPos.get(mesh).equals(mesh.position)) {
+          continue
+        }
+        // Exapnd bu updated only,
+        bounds.expandByObject(mesh)
+        lastPos.set(mesh, mesh.position.clone())
+
+        // later use only those that intersect with the bound
+      }
+
+      console.time('get bounds')
+      const tiles = dynamicTiledNavMesh.getTilesForBounds(bounds)
+      console.timeEnd('get bounds')
+      console.log('tiles to build', tiles.length, bounds)
+
+      if (tiles.length != 0) {
+        const intersectingMeshes = []
+        for (const mesh of meshes) {
+          tmpBox.setFromObject(mesh)
+          if (tmpBox.intersect(bounds)) {
+            intersectingMeshes.push(mesh)
           }
         }
-        
-      }
-    }
-    console.log(meshes)
-    console.log({ignoredMeshes, playerBox})
+        console.log("intersecting meshes", intersectingMeshes.length)
 
-    const [positions, indices] = getPositionsAndIndices(meshes);
+        console.time('pos index')
+        const [positions, indices] = getPositionsAndIndices(intersectingMeshes)
+        console.timeEnd('pos index')
+
+        console.time('build tile call')
+        for (const tile of tiles) {
+          dynamicTiledNavMesh.buildTile(positions, indices, tile)
+        }      
+        console.timeEnd('build tile call')
+      }
+      
+    //  debugDrawer.clear()
+     // debugDrawer.drawNavMesh(dynamicTiledNavMesh.navMesh)
+      console.timeEnd('collect meshes')
+    }, 100)
+
+  
     
     const navMeshConfig = {
       /* ... */
-      tileSize: 100,
+      // Greater size reduces the amount of tiles to build 
+      tileSize: 200,
       walkableClimb: 1,
       walkableSlopeAngle: 89,
       walkableRadius: 0.5,
@@ -105,24 +198,20 @@ class Navmesh extends BaseActor {
       ch: 0.2
       
     } satisfies Partial<RecastConfig>;
-    
-    const result = generateTiledNavMesh(
-      positions,
-      indices,
-      navMeshConfig
-    );
 
-    const { success, navMesh } = result    
-    console.log({success, navMesh, meshes, positions, indices})
+
+    const dynamicTiledNavMesh = new DynamicTiledNavMesh({ navMeshBounds, recastConfig: navMeshConfig, maxTiles: 512, workers: navMeshWorkers })
+
+    const success = true
+    const navMesh = dynamicTiledNavMesh.navMesh
+
 
     console.log("max tiles", navMesh.getMaxTiles())
 
     if (success && this.debug) {
       //debugDrawer.clear();
       debugDrawer.drawNavMesh(navMesh);
-    } else {
-      console.log(result)
-    }
+    } 
 
     const onResize = () => {
       debugDrawer.resize(window.innerWidth, window.innerHeight);
@@ -202,9 +291,6 @@ class Navmesh extends BaseActor {
 
   }
 
-  onUpdate(deltaTime: number) {
-
-  } 
 
 }
 
