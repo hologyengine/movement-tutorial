@@ -24,6 +24,17 @@ class Navmesh extends BaseActor {
   private pointerEvents = inject(PointerEvents)
 
   @Parameter() debug = true
+  @Parameter() refreshMs = 1000
+
+  // Performance 
+  @Parameter() tileSize = 500
+  @Parameter() cellSize = 0.2
+
+  // Navmesh 
+  @Parameter() walkableClimb = 1
+  @Parameter() walkableSlopeAngle = 45
+  @Parameter() walkableRadius = 0.5
+  @Parameter() walkableHeight = 1
 
   async onInit(): Promise<void> {
     await init()
@@ -34,28 +45,12 @@ class Navmesh extends BaseActor {
     this.object.position.set(0,0,0)
     
     // Using a box like this does help a lot in reducing computation
-    // However, 
     // A small box like 50 that is smaller than the tile size, means that it likely
     // will have to recalculate a lot of tiles
     // However, it reduces the amount of meshes that has to be taken into account. 
-    const boxRadius = 100
-      /**
-     * 
-     * It takes about 1 second right now to refresh the nav mesh.
-     * This is not acceptable for continuous updates. It is also not promising for lower end devices.
-     * 
-     * Updating just certain tiles may make updates acceptable.
-     * Most games likely will not require any updates at all except for the loading in of new landscapes and in case of level streaming.
-     * If we start generating the nav mesh when sort of close, then it may work. 
-     * 
-     * 
-     * Use the code here to get the tiles that needs to be updated 
-     * Loop over bodies that likely need to be updated. 
-     * Use the static mesh in threejs to know if things have changed
-     * Build up the mesh array again. Use cached versions of bodies. 
-     * Also try to minimize the meshes to include only those that intersect with the tiles. 
-     * https://github.com/isaac-mason/sketches/blob/main/src/sketches/recast-navigation/dynamic-tiled-navmesh/navigation/navigation.tsx
-     * 
+    const boxRadius = 600
+
+    /**
      * on each iteration
      * find objects that don't previously have been considered or have moved. 
      * only consider them if they are within the player's box (ideally none should be found here and this check should be fast)
@@ -83,7 +78,6 @@ class Navmesh extends BaseActor {
       const meshes: Mesh[] = [];
 
       const bodies = this.physics['world'].bodies as RigidBodySet
-      let ignoredMeshes = 0
       const meshBox = new THREE.Box3()
       for (const body of bodies.getAll()) {
         for (let i = 0, l = body.numColliders(); i < l; i++) {
@@ -105,28 +99,15 @@ class Navmesh extends BaseActor {
             if(closeEnough) {
               meshes.push(mesh)
             }
-            //this.object.add(mesh)
-            if (!closeEnough) {
-              ignoredMeshes++
-            }
           }
           
         }
       }
-      console.log(meshes)
-      console.log({ignoredMeshes, playerBox})
+    
       return meshes
     }
 
-    const getTraversablePositionsAndIndices = (): [positions: Float32Array, indices: Uint32Array] => {
-      const traversableMeshes = getTraversableMeshes()
-      const [positions, indices] = getPositionsAndIndices(traversableMeshes)
-
-      return [positions, indices]
-    }
-
     const tmpBox = new THREE.Box3()
-
     const lastPos = new WeakMap<Mesh, THREE.Vector3>()
 
     setInterval(() => {
@@ -140,11 +121,8 @@ class Navmesh extends BaseActor {
         if (lastPos.has(mesh) && lastPos.get(mesh).equals(mesh.position)) {
           continue
         }
-        // Exapnd bu updated only,
         bounds.expandByObject(mesh)
         lastPos.set(mesh, mesh.position.clone())
-
-        // later use only those that intersect with the bound
       }
 
       console.time('get bounds')
@@ -173,27 +151,31 @@ class Navmesh extends BaseActor {
         console.timeEnd('build tile call')
       }
       
-    //  debugDrawer.clear()
-     // debugDrawer.drawNavMesh(dynamicTiledNavMesh.navMesh)
+      if (this.debug) {
+        debugDrawer.clear()
+        debugDrawer.drawNavMesh(dynamicTiledNavMesh.navMesh)
+      }
       console.timeEnd('collect meshes')
-    }, 100)
+    }, this.refreshMs ?? 1000)
 
-  
     
     const navMeshConfig = {
-      /* ... */
       // Greater size reduces the amount of tiles to build 
-      tileSize: 200,
+      tileSize: 500,
+      //borderSize: .1,
       walkableClimb: 1,
-      walkableSlopeAngle: 89,
-      walkableRadius: 0.5,
-      walkableHeight: 1,
+      walkableSlopeAngle: 60,
+      walkableRadius: 0.4,
+      walkableHeight: 2,
       detailSampleDist: 6,
-      mergeRegionArea: 1,
-
+      minRegionArea: 8,
+      mergeRegionArea: 20,
+      //maxSimplificationError: 9,
 
       // Larger values for these create much faster generation
       // but too large values creates less good navmeshes
+      //cs: this.cellSize,
+      //ch: this.cellSize,
       cs: 0.2,
       ch: 0.2
       
@@ -204,9 +186,6 @@ class Navmesh extends BaseActor {
 
     const success = true
     const navMesh = dynamicTiledNavMesh.navMesh
-
-
-    console.log("max tiles", navMesh.getMaxTiles())
 
     if (success && this.debug) {
       //debugDrawer.clear();
@@ -238,8 +217,11 @@ class Navmesh extends BaseActor {
 
 
     const navMeshQuery = new NavMeshQuery(navMesh);
+    console.log('hafl', navMeshQuery.defaultQueryHalfExtents)
     const getPath = (from: THREE.Vector3, to: THREE.Vector3) => {
-      const { success, error, path } = navMeshQuery.computePath(from, to);
+      const { success, error, path } = navMeshQuery.computePath(from, to, {
+        halfExtents: new THREE.Vector3(5.1, 5.1, 5.1)
+      });
       console.log({success, error, path})
       if (success) {
         for (const p of path) {
@@ -264,7 +246,17 @@ class Navmesh extends BaseActor {
           if (c.distanceTo(obj.position) < .01) {
             i++
           } else {
-            obj.position.lerp(c, .3)
+            const remainingOffset = new THREE.Vector3().subVectors(c, obj.position)
+            const direction = remainingOffset.clone().normalize()
+            const movementOffset = direction.clone().multiplyScalar(20 / 1000 * 5)
+            obj.lookAt(c)
+            if (remainingOffset.length() < movementOffset.length()) {
+              obj.position.add(remainingOffset)
+            } else {
+              obj.position.add(movementOffset)
+            }
+            //obj.position.addScaledVector(direction, 20 / 1000 * 5)
+            //obj.position.lerp(c, .3)
           }
         }, 20)
       }
