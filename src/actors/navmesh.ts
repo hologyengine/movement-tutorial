@@ -1,9 +1,8 @@
 
-import { Ball, Collider, ConvexPolyhedron, Cuboid, Cylinder, Heightfield, RigidBody, RigidBodySet, ShapeType, TriMesh } from '@dimforge/rapier3d-compat';
+import { Ball, Capsule, Collider, Cone, ConvexPolyhedron, Cuboid, Cylinder, Heightfield, RigidBodySet, ShapeType, TriMesh } from '@dimforge/rapier3d-compat';
 import { Actor, BaseActor, Parameter, PhysicsSystem, PointerEvents, ViewController, World, inject } from "@hology/core/gameplay";
 import { RecastConfig, init } from '@recast-navigation/core';
-import { NavMeshQuery } from 'recast-navigation';
-import { generateTiledNavMesh } from 'recast-navigation/generators';
+import { NavMesh, NavMeshQuery } from 'recast-navigation';
 import { DebugDrawer, getPositionsAndIndices } from 'recast-navigation/three';
 import * as THREE from 'three';
 import { Mesh, } from "three";
@@ -27,7 +26,7 @@ class Navmesh extends BaseActor {
   @Parameter() refreshMs = 1000
 
   // Performance 
-  @Parameter() tileSize = 500
+  @Parameter() tileSize = 100
   @Parameter() cellSize = 0.2
 
   // Navmesh 
@@ -36,19 +35,41 @@ class Navmesh extends BaseActor {
   @Parameter() walkableRadius = 0.5
   @Parameter() walkableHeight = 1
 
+
+  public navMesh: NavMesh
+
   async onInit(): Promise<void> {
     await init()
-    setTimeout(() => this.init(), 1000)
+    this.init()
   }
 
   private init() {
+    const navMeshConfig = {
+      // Greater size reduces the amount of tiles to build 
+      tileSize: this.tileSize,
+      walkableClimb: this.walkableClimb,
+      walkableSlopeAngle: this.walkableSlopeAngle,
+      walkableRadius: this.walkableRadius,
+      walkableHeight: this.walkableHeight,
+      detailSampleDist: 6,
+      minRegionArea: 8,
+      mergeRegionArea: 20,
+      cs: this.cellSize,
+      ch: this.cellSize
+      
+    } satisfies Partial<RecastConfig>;
+    const dynamicTiledNavMesh = new DynamicTiledNavMesh({ navMeshBounds, recastConfig: navMeshConfig, maxTiles: 512, workers: navMeshWorkers })
+    this.navMesh = dynamicTiledNavMesh.navMesh
+
+
     this.object.position.set(0,0,0)
     
     // Using a box like this does help a lot in reducing computation
     // A small box like 50 that is smaller than the tile size, means that it likely
     // will have to recalculate a lot of tiles
     // However, it reduces the amount of meshes that has to be taken into account. 
-    const boxRadius = 600
+    // Being slightly greater than the tile size can help
+    const boxRadius = this.tileSize + 10
 
     /**
      * on each iteration
@@ -60,9 +81,6 @@ class Navmesh extends BaseActor {
      * find all meshes that intersect with each tiles
      * generate the positions and indices for meshes relevant for each tile
      * call build tile for each
-     * 
-     * 
-     * 
      */
     const start = performance.now()
 
@@ -110,7 +128,7 @@ class Navmesh extends BaseActor {
     const tmpBox = new THREE.Box3()
     const lastPos = new WeakMap<Mesh, THREE.Vector3>()
 
-    setInterval(() => {
+    const refreshInterval = setInterval(() => {
       console.time('collect meshes')
       const bounds = new THREE.Box3()
   
@@ -156,39 +174,13 @@ class Navmesh extends BaseActor {
         debugDrawer.drawNavMesh(dynamicTiledNavMesh.navMesh)
       }
       console.timeEnd('collect meshes')
-    }, this.refreshMs ?? 1000)
+    }, this.refreshMs ?? 10000)
+    this.disposed.subscribe(() => clearInterval(refreshInterval))
 
-    
-    const navMeshConfig = {
-      // Greater size reduces the amount of tiles to build 
-      tileSize: 500,
-      //borderSize: .1,
-      walkableClimb: 1,
-      walkableSlopeAngle: 60,
-      walkableRadius: 0.4,
-      walkableHeight: 2,
-      detailSampleDist: 6,
-      minRegionArea: 8,
-      mergeRegionArea: 20,
-      //maxSimplificationError: 9,
-
-      // Larger values for these create much faster generation
-      // but too large values creates less good navmeshes
-      //cs: this.cellSize,
-      //ch: this.cellSize,
-      cs: 0.2,
-      ch: 0.2
-      
-    } satisfies Partial<RecastConfig>;
-
-
-    const dynamicTiledNavMesh = new DynamicTiledNavMesh({ navMeshBounds, recastConfig: navMeshConfig, maxTiles: 512, workers: navMeshWorkers })
-
-    const success = true
     const navMesh = dynamicTiledNavMesh.navMesh
 
-    if (success && this.debug) {
-      //debugDrawer.clear();
+    if (this.debug) {
+      debugDrawer.clear();
       debugDrawer.drawNavMesh(navMesh);
     } 
 
@@ -217,6 +209,8 @@ class Navmesh extends BaseActor {
 
 
     const navMeshQuery = new NavMeshQuery(navMesh);
+
+
     console.log('hafl', navMeshQuery.defaultQueryHalfExtents)
     const getPath = (from: THREE.Vector3, to: THREE.Vector3) => {
       const { success, error, path } = navMeshQuery.computePath(from, to, {
@@ -357,7 +351,16 @@ function convertToGeometry(collider: Collider): THREE.BufferGeometry {
     const cylHeight = collider.shape.halfHeight;
     const cylRadius = collider.shape.radius;
     return new THREE.CylinderGeometry(cylRadius, cylRadius, cylHeight * 2);
+  } else if (collider.shape instanceof Cone) {
+    const cylHeight = collider.shape.halfHeight;
+    const cylRadius = collider.shape.radius;
+    return new THREE.ConeGeometry(cylRadius, cylHeight * 2);
+  } else if (collider.shape instanceof Capsule) {
+    const height = collider.shape.halfHeight;
+    const radius = collider.shape.radius;
+    return new THREE.CapsuleGeometry(radius, height * 2);
   } else {
+    ShapeType
     console.warn("Unsupported shape", collider.shape.type, collider)
     return null
   }
@@ -379,7 +382,6 @@ function convertColliderToMesh(collider: Collider): THREE.Mesh {
 
   mesh.position.set(position.x, position.y, position.z);
   mesh.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
-  //mesh.scale.multiplyScalar(1.1)
 
   mesh.geometry.computeBoundingBox()
 

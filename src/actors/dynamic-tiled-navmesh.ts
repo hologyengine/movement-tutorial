@@ -12,6 +12,7 @@ import * as THREE from 'three'
 import { BuildTileMeshProps, buildConfig } from './build-tile.js'
 import { Subject } from 'rxjs'
 import DynamicTiledNavMeshWorker from './dynamic-tiled-navmesh.worker?worker'
+import {buildTile} from './build-tile';
 
 export type DynamicTiledNavMeshProps = {
     navMeshBounds: THREE.Box3
@@ -115,6 +116,37 @@ export class DynamicTiledNavMesh {
         }
     }
 
+    private onResult(e: {data: { tileX: number; tileY: number; navMeshData: Uint8Array }}) {
+        const {
+            tileX,
+            tileY,
+            navMeshData: serialisedNavMeshData,
+        } = e.data as { tileX: number; tileY: number; navMeshData: Uint8Array }
+
+        const navMeshData = new UnsignedCharArray()
+        navMeshData.copy(serialisedNavMeshData as ArrayLike<number> as number[])
+
+        this.navMesh.removeTile(this.navMesh.getTileRefAt(tileX, tileY, 0))
+
+        const addTileResult = this.navMesh.addTile(navMeshData, Raw.Module.DT_TILE_FREE_DATA, 0)
+
+        if (Raw.Detour.statusFailed(addTileResult.status)) {
+            console.error(
+                Raw.Module.RC_LOG_WARNING,
+                `Failed to add tile to nav mesh` +
+                    '\n\t' +
+                    `tx: ${tileX}, ty: ${tileY},` +
+                    `status: ${statusToReadableString(addTileResult.status)} (${addTileResult.status})`,
+            )
+
+            navMeshData.destroy()
+        }
+
+        this.navMeshVersion++
+        this.onNavMeshUpdate.next([this.navMeshVersion, [tileX, tileY]])
+        
+    }
+
     buildTile(positions: Float32Array, indices: Uint32Array, [tileX, tileY]: [x: number, y: number]) {
         const clonedPositions = new Float32Array(positions)
         const clonedIndices = new Uint32Array(indices)
@@ -143,11 +175,23 @@ export class DynamicTiledNavMesh {
             indices: clonedIndices,
         }
 
-        const worker = this.workers[this.workerRoundRobin]
+        //const worker = this.workers[this.workerRoundRobin]
         this.workerRoundRobin = (this.workerRoundRobin + 1) % this.workers.length
 
         // Reduce the amount of this. Transferring the same buffers a lot. 
-        worker.postMessage(job, [clonedPositions.buffer, clonedIndices.buffer])
+        //worker.postMessage(job, [clonedPositions.buffer, clonedIndices.buffer])
+        // This just delays it. It will make everything run extremely slow for the duration.
+        // Will not be acceptable on slower devices. I can add a general worker support later 
+       // setTimeout(() => {
+        requestIdleCallback(() => {
+            const result = buildTile(job)
+            if (!result.success || !result.data) return
+            const navMeshData = result.data.toTypedArray();
+            
+            this.onResult({data: { tileX: job.tileX, tileY: job.tileY, navMeshData: navMeshData }})
+        })
+            
+        //}, 1000 * Math.random())
     }
 
     buildAllTiles(positions: Float32Array, indices: Uint32Array) {
