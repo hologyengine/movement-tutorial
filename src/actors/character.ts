@@ -25,6 +25,7 @@ class Character extends BaseActor {
     minDistance: 3,
     maxDistance: 3,
     distance: 3,
+    autoActivate: false
   })
 
   private assetLoader = inject(AssetLoader)

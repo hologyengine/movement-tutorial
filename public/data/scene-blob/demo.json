@@ -6260,32 +6260,6 @@
       "hidden": true
     },
     {
-      "id": "aeda255c-5e52-4766-a955-16792303a1c0",
-      "name": "Navmesh",
-      "position": [
-        -166.1000514144951,
-        -1.7763568394002505e-15,
-        146.7070460591974
-      ],
-      "scale": [
-        1,
-        1,
-        1
-      ],
-      "rotation": [
-        0,
-        0,
-        0,
-        "XYZ"
-      ],
-      "type": "actor",
-      "actor": {
-        "type": "Navmesh",
-        "innerParams": [],
-        "params": {}
-      }
-    },
-    {
       "id": "01f493fc-20ee-4cb4-a883-56a4255bdf9a",
       "name": "barrel",
       "assetId": "9c22828c-547e-476f-82b6-265921f19278",
@@ -6309,7 +6283,7 @@
       "materialAssignments": [],
       "collisionDetection": true,
       "physics": {
-        "type": 2,
+        "type": 1,
         "friction": 0.5,
         "density": 1,
         "restitution": 0.5,
@@ -27986,6 +27960,230 @@
       "type": "asset_mesh",
       "materialAssignments": [],
       "collisionDetection": true,
+      "physics": {
+        "type": 2,
+        "friction": 0.5,
+        "density": 1,
+        "restitution": 0.5,
+        "mass": 1
+      }
+    },
+    {
+      "id": "025f457a-bdc1-42f7-b08e-60b852f6b173",
+      "name": "NavMesh",
+      "position": [
+        -25.50020162097792,
+        0,
+        79.75212346046582
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "type": "actor",
+      "actor": {
+        "type": "NavMesh",
+        "innerParams": [],
+        "params": {
+          "debug": {
+            "type": 4,
+            "value": false
+          },
+          "refreshMs": {
+            "type": 1,
+            "value": 1000
+          },
+          "tileSize": {
+            "type": 1,
+            "value": 100
+          },
+          "cellSize": {
+            "type": 1,
+            "value": 0.2
+          },
+          "walkableClimb": {
+            "type": 1,
+            "value": 1
+          },
+          "walkableSlopeAngle": {
+            "type": 1,
+            "value": 45
+          },
+          "walkableRadius": {
+            "type": 1,
+            "value": 0.5
+          },
+          "walkableHeight": {
+            "type": 1,
+            "value": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "ffde9a5c-6bb6-4abd-9442-95b32569a1d0",
+      "name": "Box",
+      "position": [
+        -169.84471520210363,
+        0,
+        108.87185071076883
+      ],
+      "scale": [
+        11.28515260137048,
+        5.159968095167082,
+        0.9999999999999999
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "type": "shape_mesh",
+      "materialAssignments": [],
+      "castShadow": true,
+      "receiveShadow": true,
+      "collisionDetection": true,
+      "shape": "box",
+      "physics": {
+        "type": 2,
+        "friction": 0.5,
+        "density": 1,
+        "restitution": 0.5,
+        "mass": 1
+      }
+    },
+    {
+      "id": "120cfd15-a5ea-47a9-b19d-1908e612bbff",
+      "name": "Box",
+      "position": [
+        -175.00000000000003,
+        2.886579864025407e-15,
+        104
+      ],
+      "scale": [
+        11.285152601370479,
+        5.159968095167083,
+        1
+      ],
+      "rotation": [
+        -3.141592653589231,
+        1.570347275182684,
+        3.141592653589231,
+        "XYZ"
+      ],
+      "type": "shape_mesh",
+      "materialAssignments": [],
+      "castShadow": true,
+      "receiveShadow": true,
+      "collisionDetection": true,
+      "shape": "box",
+      "physics": {
+        "type": 2,
+        "friction": 0.5,
+        "density": 1,
+        "restitution": 0.5,
+        "mass": 1
+      }
+    },
+    {
+      "id": "a0e1ff7b-abf1-452b-8735-419b3080f6c7",
+      "name": "Box",
+      "position": [
+        -172,
+        2.886579864025407e-15,
+        98.99999999999999
+      ],
+      "scale": [
+        11.285152601370477,
+        5.159968095167083,
+        0.9999999999999999
+      ],
+      "rotation": [
+        -3.141592653589231,
+        1.570347275182684,
+        3.141592653589231,
+        "XYZ"
+      ],
+      "type": "shape_mesh",
+      "materialAssignments": [],
+      "castShadow": true,
+      "receiveShadow": true,
+      "collisionDetection": true,
+      "shape": "box",
+      "physics": {
+        "type": 2,
+        "friction": 0.5,
+        "density": 1,
+        "restitution": 0.5,
+        "mass": 1
+      }
+    },
+    {
+      "id": "988c0f8d-7824-4a6c-8c18-1f46c98333fa",
+      "name": "Box",
+      "position": [
+        -175.99999999999994,
+        1.5543122344752192e-15,
+        95.99999999999997
+      ],
+      "scale": [
+        11.285152601370484,
+        5.159968095167077,
+        1.0000000000000002
+      ],
+      "rotation": [
+        -3.141592653589793,
+        -0.00044905161245305947,
+        -3.141592653589793,
+        "XYZ"
+      ],
+      "type": "shape_mesh",
+      "materialAssignments": [],
+      "castShadow": true,
+      "receiveShadow": true,
+      "collisionDetection": true,
+      "shape": "box",
+      "physics": {
+        "type": 2,
+        "friction": 0.5,
+        "density": 1,
+        "restitution": 0.5,
+        "mass": 1
+      }
+    },
+    {
+      "id": "04baf3d7-3ea4-4b2d-b08e-91db0f5704da",
+      "name": "Box",
+      "position": [
+        -178,
+        6.661338147750939e-16,
+        100
+      ],
+      "scale": [
+        11.285152601370491,
+        5.159968095167073,
+        0.9999999999999999
+      ],
+      "rotation": [
+        -1.1082545432644786e-13,
+        -1.570347275182684,
+        -1.1052353101232257e-13,
+        "XYZ"
+      ],
+      "type": "shape_mesh",
+      "materialAssignments": [],
+      "castShadow": true,
+      "receiveShadow": true,
+      "collisionDetection": true,
+      "shape": "box",
       "physics": {
         "type": 2,
         "friction": 0.5,

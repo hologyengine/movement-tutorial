@@ -100,11 +100,12 @@ class Navmesh extends BaseActor {
       for (const body of bodies.getAll()) {
         for (let i = 0, l = body.numColliders(); i < l; i++) {
           const collider = body.collider(i)
-          if (collider.isSensor()) {
+          if (collider.isSensor() || (collider.parent().userData != null && collider.parent().userData['ignoreForNavMesh'] === true)) {
             continue
           } 
           const cached = meshCache.get(collider)?.mesh
           const mesh = cached ?? convertColliderToMesh(collider)
+          copyColliderTransform(collider, mesh)
           
           // TODO Consider using spheres instead
           if (mesh != null) {
@@ -113,6 +114,7 @@ class Navmesh extends BaseActor {
             meshBox.max.add(mesh.position)
             const closeEnough = meshBox.intersectsBox(playerBox)
 
+            // Probably should use previous transform as well to somehow check if other tiles need updatew
             meshCache.set(collider, {pos: collider.translation(), mesh})
             if(closeEnough) {
               meshes.push(mesh)
@@ -126,7 +128,7 @@ class Navmesh extends BaseActor {
     }
 
     const tmpBox = new THREE.Box3()
-    const lastPos = new WeakMap<Mesh, THREE.Vector3>()
+    const lastPos = new Map<Mesh, THREE.Vector3>()
 
     const refreshInterval = setInterval(() => {
       console.time('collect meshes')
@@ -136,13 +138,17 @@ class Navmesh extends BaseActor {
       const meshes = getTraversableMeshes()
       console.timeEnd('meshes')
       for (const mesh of meshes) {
-        if (lastPos.has(mesh) && lastPos.get(mesh).equals(mesh.position)) {
+        const prevPos = lastPos.get(mesh)
+        if (prevPos?.equals(mesh.position) === true) {
           continue
+        }
+        if (prevPos != null) {
+          // Expand by the previous position so that old tiles can be updated. 
+          bounds.expandByPoint(prevPos)
         }
         bounds.expandByObject(mesh)
         lastPos.set(mesh, mesh.position.clone())
       }
-
       console.time('get bounds')
       const tiles = dynamicTiledNavMesh.getTilesForBounds(bounds)
       console.timeEnd('get bounds')
@@ -167,11 +173,11 @@ class Navmesh extends BaseActor {
           dynamicTiledNavMesh.buildTile(positions, indices, tile)
         }      
         console.timeEnd('build tile call')
-      }
-      
-      if (this.debug) {
-        debugDrawer.clear()
-        debugDrawer.drawNavMesh(dynamicTiledNavMesh.navMesh)
+
+        if (this.debug) {
+          //debugDrawer.clear()
+          //debugDrawer.drawNavMesh(dynamicTiledNavMesh.navMesh)
+         }
       }
       console.timeEnd('collect meshes')
     }, this.refreshMs ?? 10000)
@@ -377,13 +383,15 @@ function convertColliderToMesh(collider: Collider): THREE.Mesh {
   const material = new THREE.MeshBasicMaterial({ wireframe: false, color: 0xff0000 , side: THREE.DoubleSide});
   const mesh = new THREE.Mesh(geometry, material);
 
+  mesh.geometry.computeBoundingBox()
+
+  return mesh;
+}
+
+function copyColliderTransform(collider: Collider, mesh: Mesh) {
   const position = collider.translation();
   const rotation = collider.rotation();
 
   mesh.position.set(position.x, position.y, position.z);
   mesh.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
-
-  mesh.geometry.computeBoundingBox()
-
-  return mesh;
 }

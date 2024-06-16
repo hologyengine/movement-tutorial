@@ -1,0 +1,99 @@
+{
+  "id": "9c4affc4-a8ba-4c87-8f78-9bde32c9f35e",
+  "name": "demo2",
+  "sceneId": "9c4affc4-a8ba-4c87-8f78-9bde32c9f35e",
+  "data": [
+    {
+      "id": "auto-global-fog",
+      "name": "Global fog",
+      "type": "global_fog",
+      "fog": {
+        "type": "density",
+        "color": "#b8f8ff",
+        "density": 0.005,
+        "near": 100,
+        "far": 1000
+      }
+    },
+    {
+      "id": "auto-sky",
+      "name": "Sky",
+      "type": "sky",
+      "sky": {
+        "materialId": null
+      }
+    },
+    {
+      "id": "30d8ade7-173c-493b-ada7-6c55c8ca0c16",
+      "name": "Landscape",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "type": "shape_mesh",
+      "materialAssignments": [],
+      "castShadow": true,
+      "receiveShadow": true,
+      "collisionDetection": true,
+      "shape": "landscape",
+      "landscape": {
+        "options": {
+          "sectionSize": 100,
+          "sections": {
+            "x": 4,
+            "y": 4
+          },
+          "density": 40
+        },
+        "heightMaps": []
+      }
+    },
+    {
+      "id": "e4aace76-6ead-46f4-9fd6-0c109743dd51",
+      "name": "NavMesh",
+      "position": [
+        8.337465934662326,
+        0,
+        4.799681040779699
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "type": "actor",
+      "actor": {
+        "type": "NavMesh",
+        "innerParams": [],
+        "params": {
+          "debug": {},
+          "refreshMs": {},
+          "tileSize": {},
+          "cellSize": {},
+          "walkableClimb": {},
+          "walkableSlopeAngle": {},
+          "walkableRadius": {},
+          "walkableHeight": {}
+        }
+      }
+    }
+  ]
+}
